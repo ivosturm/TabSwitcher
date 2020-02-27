@@ -23,8 +23,9 @@ define([
     "mxui/widget/_WidgetBase",
 	"mxui/dom",
 	"dojo/dom-style",
-	"dijit/registry"
-], function(declare, NodeList, _WidgetBase, dom, domStyle, registry) {
+	"dijit/registry",
+	"dojo/on"
+], function(declare, NodeList, _WidgetBase, dom, domStyle, registry, on) {
     "use strict";
 
     // Declare widget's prototype.
@@ -45,6 +46,7 @@ define([
 		_contextObj: null,
 		_clickHandleList: null,
 		clickMicroflow: null,
+		handler: null,
 		
 		// dojo.declare.constructor is called to construct the widget instance. Implement to initialize non-primitive properties.
 		constructor: function() {
@@ -199,30 +201,49 @@ define([
 
 		_setupClickListeners: function() {
 			if(this._contextObj && !this._clickHandleList.length) {
-				this._tabContainer = dijit.byNode(dojo.query("."+this.tabclass)[0]);
+				//handle the case that the page is being opened again
+				var list = dojo.query("."+this.tabclass); //returns a list of tabs from the dom
+				if (list){
+					list.forEach(function (item){
+						var node = dijit.byNode(item); // register each item
+						//if multiple items are returned then that means one container is in the process of being destroyed and the other is being created.
+						//check for the being destroyed flag and set the tab container correctly
+						if (node && !node._beingDestroyed){ 
+							this._tabContainer = node;
+						}
+					}.bind(this));
+				}
+
 				var tabList = this._tabContainer.getChildren();
 				if(tabList) {
 					var onTabClick = this._onTabClick.bind(this);
+					this.handler = onTabClick;
 					tabList.forEach(function(tab) {
 						var handle = this.connect(tab.button, "click", function() {
 							onTabClick(tab);
 						});
 						this._clickHandleList.push(handle);
+						
 					}.bind(this));
 				} else {
 					console.error("Could not find tabs to set click listeners");
 				}
+
+				
+					
 			}
 		},
 
 		//called when a tab is clicked
 		_onTabClick: function(tab) {
-			var index = this._tabContainer.getChildren().indexOf(tab);
-			this._updateTabAttr(index);
-			if (this.clickMicroflow){
-				this._clickMicroflow();
-			}	
-				
+
+			if (this._tabContainer){
+				var index = this._tabContainer.getChildren().indexOf(tab);
+				this._updateTabAttr(index);
+				if (this.clickMicroflow){
+					this._clickMicroflow();
+				}	
+			}
 		},
 
 		//updates the tab attribute value
@@ -251,7 +272,8 @@ define([
 		},
 
 		uninitialize: function(){
-		}
+
+		} 
     });
 });
 
