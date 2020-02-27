@@ -44,6 +44,7 @@ define([
 		_subscriptionHandleAttr: null,
 		_contextObj: null,
 		_clickHandleList: null,
+		clickMicroflow: null,
 		
 		// dojo.declare.constructor is called to construct the widget instance. Implement to initialize non-primitive properties.
 		constructor: function() {
@@ -218,6 +219,10 @@ define([
 		_onTabClick: function(tab) {
 			var index = this._tabContainer.getChildren().indexOf(tab);
 			this._updateTabAttr(index);
+			if (this.clickMicroflow){
+				this._clickMicroflow();
+			}	
+				
 		},
 
 		//updates the tab attribute value
@@ -225,6 +230,24 @@ define([
 			this._removeSubscriptions();
 			this._contextObj.set(this.tabAttribute, index);
 			this._addSubscriptions();
+		},
+		_clickMicroflow: function(){
+			mx.data.action({
+                params: {
+                    applyto: "selection",
+                    actionname: this.clickMicroflow,
+                    guids: [this.contextGUID],
+                },
+                origin: this.mxform,
+                callback: function(response) {
+					
+				},
+                error: function(error) {
+                    console.error(error);
+                    //alert(error.message);
+                }, 
+            });
+
 		},
 
 		uninitialize: function(){
