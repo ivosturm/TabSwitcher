@@ -124,9 +124,9 @@ define([
 		getTab : function ( _tabIndex ) {
 			var gototab = null;
 			
-			if (dojo.query("."+this.tabclass)[0].classList.contains('mx-tabcontainer')){
+			if (dojo.query("."+this.tabclass).find(it=>it.classList.contains('mx-tabcontainer'))!==undefined){
 			
-				this._tabContainer = dijit.byNode(dojo.query("."+this.tabclass)[0]);
+				this._tabContainer = dijit.byNode(dojo.query("."+this.tabclass).find(it=>it.classList.contains('mx-tabcontainer')));
 				
 
 				var tablist = this._tabContainer.getChildren();
